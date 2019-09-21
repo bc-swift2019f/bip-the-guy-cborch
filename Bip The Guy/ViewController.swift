@@ -9,11 +9,15 @@
 import UIKit
 import AVFoundation
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     // Mark: Properties
     @IBOutlet weak var imageToPunch: UIImageView!
     var audioPlayer = AVAudioPlayer()
-    // variable of type AVAudioPlayer
+    // Variable of type AVAudioPlayer
+    var imagePicker = UIImagePickerController()
+    // Variable of type UIImagePicker
+    // UIImagePickerController = a class, which is a blueprint containing data fields and methods
+    // - Here we are creating an object of the class like doing new in Java
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -50,13 +54,49 @@ class ViewController: UIViewController {
             print("Error: file \(soundName) didn't load")
         }
     }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        let selectedImage = info[UIImagePickerController.InfoKey.originalImage] as! UIImage
+        // User has succesfully selected an images lets grab it from the dictionary info and slap it into selectedImage as a UIImage
+        imageToPunch.image = selectedImage
+        
+        dismiss(animated: true, completion: nil)
+    }
+    
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        dismiss(animated: true, completion: nil)
+    }
+    
+    func showAlert(title: String, message: String) {
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        // UIAlertController object and passing parameters to the class
+        let action = UIAlertAction(title: "OK", style: .default, handler: nil)
+        // Create the action
+        // Handler if you want some code to run once OK pressed
+        alertController.addAction(action)
+        // Add the UIAlertAction to the UIAlertController
+        present(alertController, animated: true, completion: nil)
+    }
 
     
     // Mark: ACTIONS
     @IBAction func libraryPressed(_ sender: UIButton) {
+        imagePicker.sourceType = .photoLibrary
+        imagePicker.delegate = self
+        // To connect the imagePicker to the view controller
+        // - Self is jsut referring to the view controller
+        present(imagePicker, animated: true, completion: nil)
     }
     
     @IBAction func cameraPressed(_ sender: UIButton) {
+        if UIImagePickerController.isSourceTypeAvailable(.camera) {
+            imagePicker.sourceType = .camera
+            imagePicker.delegate = self
+            present(imagePicker, animated: true, completion: nil)
+        } else {
+            showAlert(title: "Camera Not Available", message: "There is no camera available on this device")
+        }
+
     }
     
     @IBAction func imageTapped(_ sender: UITapGestureRecognizer) {
@@ -64,6 +104,11 @@ class ViewController: UIViewController {
         playSound(soundName: "punchSound", audioPlayer: &audioPlayer)
     }
 }
+
+// 4.4 Notes
+// Part of UIImagePicker protocol is that when it is done picking an image it calls the function func imagePickerController
+// - We have to actually implement what this func will do
+// Also creates the func imagePickerControllerDidCancel that we have to implement
 
 // 4.2 Notes
 // iPhone Cordinate system
